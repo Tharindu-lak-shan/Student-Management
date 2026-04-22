@@ -13,21 +13,24 @@ class _ManageStudentState extends State<ManageStudent> {
     'students',
   );
 
+  final TextEditingController idController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
-  final TextEditingController courseController = TextEditingController();
+  final TextEditingController classController = TextEditingController();
 
   // 🔹 Add Student
   Future<void> addStudent() async {
-    if (nameController.text.isEmpty ||
+    if (idController.text.isEmpty ||
+        nameController.text.isEmpty ||
         ageController.text.isEmpty ||
-        courseController.text.isEmpty)
+        classController.text.isEmpty)
       return;
 
-    await students.add({
+    await students.doc(idController.text).set({
+      'id': idController.text,
       'name': nameController.text,
       'age': ageController.text,
-      'course': courseController.text,
+      'class': classController.text,
       'createdAt': FieldValue.serverTimestamp(),
     });
 
@@ -37,10 +40,11 @@ class _ManageStudentState extends State<ManageStudent> {
 
   // 🔹 Update Student
   Future<void> updateStudent(String docId) async {
-    await students.doc(docId).update({
+    await students.doc(idController.text).update({
+      'id': idController.text,
       'name': nameController.text,
       'age': ageController.text,
-      'course': courseController.text,
+      'class': classController.text,
     });
 
     clearFields();
@@ -54,17 +58,19 @@ class _ManageStudentState extends State<ManageStudent> {
 
   // 🔹 Clear input fields
   void clearFields() {
+    idController.clear();
     nameController.clear();
     ageController.clear();
-    courseController.clear();
+    classController.clear();
   }
 
   // 🔹 Show Add / Update Dialog
   void showStudentDialog({String? docId, Map<String, dynamic>? data}) {
     if (data != null) {
+      idController.text = data['id'];
       nameController.text = data['name'];
       ageController.text = data['age'];
-      courseController.text = data['course'];
+      classController.text = data['class'];
     }
 
     showDialog(
@@ -75,6 +81,10 @@ class _ManageStudentState extends State<ManageStudent> {
           child: Column(
             children: [
               TextField(
+                controller: idController,
+                decoration: const InputDecoration(labelText: "ID"),
+              ),
+              TextField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: "Name"),
               ),
@@ -84,8 +94,8 @@ class _ManageStudentState extends State<ManageStudent> {
                 keyboardType: TextInputType.number,
               ),
               TextField(
-                controller: courseController,
-                decoration: const InputDecoration(labelText: "Course"),
+                controller: classController,
+                decoration: const InputDecoration(labelText: "Class"),
               ),
             ],
           ),
@@ -145,7 +155,7 @@ class _ManageStudentState extends State<ManageStudent> {
                 child: ListTile(
                   title: Text(data['name'] ?? ''),
                   subtitle: Text(
-                    "Age: ${data['age']} | Course: ${data['course']}",
+                    "Age: ${data['age']} | Class: ${data['class']}",
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
